@@ -27,15 +27,7 @@ public class OrderService {
         // - Duplicate blocks
         // - Weak validation and error handling
 
-        if (userId == null || userId.trim().isEmpty()) {
-            throw new RuntimeException("userId empty");
-        }
-        if (sku == null || sku.trim().isEmpty()) {
-            throw new RuntimeException("sku empty");
-        }
-        if (qty <= 0) {
-            throw new RuntimeException("qty invalid");
-        }
+        validateInputs(userId, sku, qty);
 
         Product p = catalog.findBySku(sku);
         if (p == null) {
@@ -59,33 +51,10 @@ public class OrderService {
         line.unitPrice = p.price;
         o.lines.add(line);
 
-        double raw = 0.0;
-        for (OrderLine l : o.lines) {
-            raw += l.qty * l.unitPrice;
-        }
+        double raw = calculateRaw(o);
 
         // duplicate-ish calculation blocks (for refactor)
-        double shippingFee ;
-        if (region != null && region.equalsIgnoreCase("US")) {
-            if (raw > US_FREE_SHIPPING_THRESHOLD) {
-                shippingFee = 0.0;
-            } else {
-                shippingFee = US_SHIPPING_FEE;
-            }
-        } else if (region != null && region.equalsIgnoreCase("EU")) {
-            if (raw > 120) {
-                shippingFee = 0.0;
-            } else {
-                shippingFee = 20.0;
-            }
-        } else {
-            // CN or others
-            if (raw > 88) {
-                shippingFee = 0.0;
-            } else {
-                shippingFee = 12.0;
-            }
-        }
+        double shippingFee = calculateShippingFee(region, raw);
 
         double discount = 0.0;
         if (coupon != null && coupon.equalsIgnoreCase("VIP10")) {
@@ -124,6 +93,51 @@ public class OrderService {
                 ", ship=" + shippingFee +
                 ", total=" + o.totalAmount +
                 ", status=" + o.status;
+    }
+
+    private static double calculateShippingFee(String region, double raw) {
+        double shippingFee ;
+        if (region != null && region.equalsIgnoreCase("US")) {
+            if (raw > US_FREE_SHIPPING_THRESHOLD) {
+                shippingFee = 0.0;
+            } else {
+                shippingFee = US_SHIPPING_FEE;
+            }
+        } else if (region != null && region.equalsIgnoreCase("EU")) {
+            if (raw > 120) {
+                shippingFee = 0.0;
+            } else {
+                shippingFee = 20.0;
+            }
+        } else {
+            // CN or others
+            if (raw > 88) {
+                shippingFee = 0.0;
+            } else {
+                shippingFee = 12.0;
+            }
+        }
+        return shippingFee;
+    }
+
+    private static double calculateRaw(Order o) {
+        double raw = 0.0;
+        for (OrderLine l : o.lines) {
+            raw += l.qty * l.unitPrice;
+        }
+        return raw;
+    }
+
+    private static void validateInputs(String userId, String sku, int qty) {
+        if (userId == null || userId.trim().isEmpty()) {
+            throw new RuntimeException("userId empty");
+        }
+        if (sku == null || sku.trim().isEmpty()) {
+            throw new RuntimeException("sku empty");
+        }
+        if (qty <= 0) {
+            throw new RuntimeException("qty invalid");
+        }
     }
 
     public String dumpData() {
