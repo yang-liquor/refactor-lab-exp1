@@ -13,6 +13,9 @@ import java.util.Map;
 
 public class OrderService {
 
+    private static final double US_FREE_SHIPPING_THRESHOLD = 100.0;
+    private static final double US_SHIPPING_FEE = 15.0;
+
     private final InMemoryCatalogRepository catalog = new InMemoryCatalogRepository();
     private final InMemoryOrderRepository orders = new InMemoryOrderRepository();
 
@@ -64,10 +67,10 @@ public class OrderService {
         // duplicate-ish calculation blocks (for refactor)
         double shippingFee ;
         if (region != null && region.equalsIgnoreCase("US")) {
-            if (raw > 100) {
+            if (raw > US_FREE_SHIPPING_THRESHOLD) {
                 shippingFee = 0.0;
             } else {
-                shippingFee = 15.0;
+                shippingFee = US_SHIPPING_FEE;
             }
         } else if (region != null && region.equalsIgnoreCase("EU")) {
             if (raw > 120) {
