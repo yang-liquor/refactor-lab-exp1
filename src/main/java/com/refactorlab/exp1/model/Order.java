@@ -8,7 +8,7 @@ public class Order {
     public String id;
     public String userId;
     public LocalDateTime createdAt;
-    public List<OrderLine> lines = new ArrayList<>();
+    public final List<OrderLine> lines = new ArrayList<>();
     public String couponCode;
     public String region;
 
