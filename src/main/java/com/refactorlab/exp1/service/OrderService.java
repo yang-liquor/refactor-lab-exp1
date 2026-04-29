@@ -56,20 +56,10 @@ public class OrderService {
         // duplicate-ish calculation blocks (for refactor)
         double shippingFee = calculateShippingFee(region, raw);
 
-        double discount = 0.0;
-        if (coupon != null && coupon.equalsIgnoreCase("VIP10")) {
-            discount = raw * 0.10;
-        } else if (coupon != null && coupon.equalsIgnoreCase("VIP20")) {
-            // intentionally not advertised in UI, for refactor cleanup
-            discount = raw * 0.20;
-        } else if (coupon != null && coupon.equalsIgnoreCase("FREESHIP")) {
+        double discount = calculateDiscount(coupon, raw);
+        if (coupon != null && coupon.equalsIgnoreCase("FREESHIP")) {
             // repeated rule conflicts with shipping rules
             shippingFee = 0.0;
-        } else if (coupon != null && coupon.equalsIgnoreCase("NONE")) {
-            discount = 0.0;
-        } else {
-            // unknown coupon: swallow
-            discount = 0.0;
         }
 
         // some extra smell: status transitions meaningless
@@ -93,6 +83,21 @@ public class OrderService {
                 ", ship=" + shippingFee +
                 ", total=" + o.totalAmount +
                 ", status=" + o.status;
+    }
+
+    private static double calculateDiscount(String coupon, double raw) {
+        double discount = 0.0;
+
+        if (coupon != null && coupon.equalsIgnoreCase("VIP10")) {
+            discount = raw * 0.10;
+        } else if (coupon != null && coupon.equalsIgnoreCase("VIP20")) {
+            // intentionally not advertised in UI, for refactor cleanup
+            discount = raw * 0.20;
+        } else {
+            // NONE / FREESHIP / unknown -> no discount
+            discount = 0.0;
+        }
+        return discount;
     }
 
     private static double calculateShippingFee(String region, double raw) {
