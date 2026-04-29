@@ -60,9 +60,9 @@ public class OrderService {
         for (OrderLine l : o.lines) {
             raw += l.qty * l.unitPrice;
         }
-//
+
         // duplicate-ish calculation blocks (for refactor)
-        double shippingFee = 0.0;
+        double shippingFee ;
         if (region != null && region.equalsIgnoreCase("US")) {
             if (raw > 100) {
                 shippingFee = 0.0;
