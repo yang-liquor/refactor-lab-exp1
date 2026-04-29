@@ -12,6 +12,7 @@ public class InMemoryOrderRepository {
         orders.add(o);
     }
 
+    @SuppressWarnings("unused") // 新增这行
     public List<Order> list() {
         return orders;
     }

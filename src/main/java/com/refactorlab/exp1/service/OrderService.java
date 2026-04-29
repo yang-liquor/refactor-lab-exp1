@@ -58,7 +58,6 @@ public class OrderService {
 
         double discount = calculateDiscount(coupon, raw);
         if (coupon != null && coupon.equalsIgnoreCase("FREESHIP")) {
-            // repeated rule conflicts with shipping rules
             shippingFee = 0.0;
         }
 
@@ -85,19 +84,27 @@ public class OrderService {
                 ", status=" + o.status;
     }
 
-    private static double calculateDiscount(String coupon, double raw) {
-        double discount = 0.0;
-
-        if (coupon != null && coupon.equalsIgnoreCase("VIP10")) {
-            discount = raw * 0.10;
-        } else if (coupon != null && coupon.equalsIgnoreCase("VIP20")) {
-            // intentionally not advertised in UI, for refactor cleanup
-            discount = raw * 0.20;
-        } else {
-            // NONE / FREESHIP / unknown -> no discount
-            discount = 0.0;
+    private static double applyFreeShipCoupon(String coupon, double shippingFee) {
+        if (coupon != null && coupon.equalsIgnoreCase("FREESHIP")) {
+            // repeated rule conflicts with shipping rules
+            shippingFee = 0.0;
         }
-        return discount;
+        return shippingFee;
+    }
+
+    private static double calculateDiscount(String coupon, double raw) {
+        if (coupon == null) {
+            return 0.0;
+        }
+        if (coupon.equalsIgnoreCase("VIP10")) {
+            return raw * 0.10;
+        }
+        if (coupon.equalsIgnoreCase("VIP20")) {
+            // intentionally not advertised in UI, for refactor cleanup
+            return raw * 0.20;
+        }
+        // NONE / FREESHIP / unknown -> no discount
+        return 0.0;
     }
 
     private static double calculateShippingFee(String region, double raw) {
